@@ -17,6 +17,12 @@ char* random_block(size_t size) {
 	return head;
 }
 
+std::string snppiner = "|/-\\";
+void do_draw(float process) {
+	std::cout << "\r";
+	std::cout << "..." << snppiner[(int)process % 4] << "%" << (int)process << std::flush;
+}
+
 int main(int argc, char** argv) {
 	std::string filename = argv[1];
 	std::shared_ptr<std::ofstream> myfile = std::shared_ptr<std::ofstream>(new std::ofstream());
@@ -28,8 +34,17 @@ int main(int argc, char** argv) {
 
 	myfile->seekp(0, std::ios_base::end);
 	auto filesize = myfile->tellp();
-	//auto filesize = 197397;//myfile->tellp();
 	std::cout << "filesize:" << filesize << std::endl;
+
+	std::cout << "decide to crack file? [Y] to continue:" << std::endl;
+	
+	char y;
+	std::cin >> y;
+	if(y != 'Y') {
+		myfile->close();		
+		std::cout << "exit.. " << std::endl;
+		return 0;
+	}
 
 	auto sector = 512;
 	auto count = 4;
@@ -40,12 +55,15 @@ int main(int argc, char** argv) {
 	
 	for(auto i = 0; i < entry_point; i++) {
 		auto pos = i * random_area;
-		//std::cout << pos << std::endl;
 		myfile->seekp(pos);
 		char* block = random_block(random_area); 
 		myfile->write(block, random_area);
 		free(block);
+
+		do_draw(((float)i/entry_point)*100);
 	}
+
+	myfile->close();
 
 	return 0;
 }
